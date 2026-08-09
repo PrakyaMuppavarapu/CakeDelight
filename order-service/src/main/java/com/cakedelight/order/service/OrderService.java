@@ -17,6 +17,7 @@ import com.cakedelight.order.repository.OrderItemRepository;
 import com.cakedelight.order.entity.OrderItem;
 import com.cakedelight.order.dto.CakeResponse;
 import java.math.BigDecimal;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -164,7 +165,7 @@ public class OrderService {
         for (BasketItem item : basketItems) {
 
             CakeResponse cake = restClient.get()
-                    .uri("http://localhost:8080/cakes/{id}", item.getCakeId())
+                    .uri(catalogServiceUrl + "/cakes/{id}", item.getCakeId())
                     .retrieve()
                     .body(CakeResponse.class);
 
@@ -211,7 +212,7 @@ public class OrderService {
         for (BasketItem basketItem : basketItems) {
 
             CakeResponse cake = restClient.get()
-                    .uri("http://localhost:8080/cakes/{id}", basketItem.getCakeId())
+                    .uri(catalogServiceUrl + "/cakes/{id}", basketItem.getCakeId())
                     .retrieve()
                     .body(CakeResponse.class);
 
@@ -254,11 +255,14 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
+    @Value("${catalog.service.url:http://localhost:8080}")
+    private String catalogServiceUrl;
+
     private Boolean checkCakeExists(Long cakeId) {
 
         try {
             restClient.get()
-                    .uri("http://localhost:8080/cakes/{id}", cakeId)
+                    .uri(catalogServiceUrl + "/cakes/{id}", cakeId)
                     .retrieve()
                     .toBodilessEntity();
 
