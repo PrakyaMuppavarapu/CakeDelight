@@ -232,7 +232,7 @@ async function updateBasketItem(itemId, quantity) {
     try {
 
         const response = await fetch(
-            `${API_BASE}/orders/basket/${itemId}`,
+            `${API_BASE}/orders/basket/${CUSTOMER_EMAIL}/${itemId}`,
             {
                 method: "PUT",
                 headers: {
@@ -264,7 +264,7 @@ async function removeBasketItem(itemId) {
     try {
 
         const response = await fetch(
-            `${API_BASE}/orders/basket/${itemId}`,
+            `${API_BASE}/orders/basket/${CUSTOMER_EMAIL}/${itemId}`,
             {
                 method: "DELETE"
             }

@@ -7,11 +7,49 @@ services:
       POSTGRES_DB: catalog_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - catalog-db-data:/var/lib/postgresql/data
+    networks:
+      - cakedelight-network
+
+  order-postgres:
+    image: postgres:17
+    container_name: order-postgres
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+    networks:
+      - cakedelight-network
+
+  rating-postgres:
+    image: postgres:17
+    container_name: rating-postgres
+    environment:
+      POSTGRES_DB: rating_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - rating-db-data:/var/lib/postgresql/data
+    networks:
+      - cakedelight-network
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: cakedelight-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5432:5432"
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - cakedelight-network
 
   catalog-service:
-    image: cakedelight/catalog-service:1.0
+    build: ./catalog-service
     container_name: catalog-service
     depends_on:
       - catalog-postgres
@@ -21,3 +59,80 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
     ports:
       - "8080:8080"
+    networks:
+      - cakedelight-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    depends_on:
+      - order-postgres
+      - catalog-service
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-postgres:5432/order_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      CATALOG_SERVICE_URL: http://catalog-service:8080
+    ports:
+      - "8081:8081"
+    networks:
+      - cakedelight-network
+
+  rating-service:
+    build: ./rating-service
+    container_name: rating-service
+    depends_on:
+      - rating-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://rating-postgres:5432/rating_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8082:8082"
+    networks:
+      - cakedelight-network
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    depends_on:
+      - rabbitmq
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "8083:8083"
+    networks:
+      - cakedelight-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      - catalog-service
+      - order-service
+      - rating-service
+    environment:
+      CATALOG_SERVICE_URL: http://catalog-service:8080
+      ORDER_SERVICE_URL: http://order-service:8081
+      RATING_SERVICE_URL: http://rating-service:8082
+    ports:
+      - "8084:8084"
+    networks:
+      - cakedelight-network
+
+volumes:
+  catalog-db-data:
+  order-db-data:
+  rating-db-data:
+
+networks:
+  cakedelight-network:
+    driver: bridge
