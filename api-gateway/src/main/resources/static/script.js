@@ -62,7 +62,7 @@ async function loadCakes() {
 
             card.innerHTML = `
                 ${cake.imageUrl
-                    ? `<img src="${cake.imageUrl}" alt="${cake.name}">`
+                ? `<img src="images/${cake.imageUrl}" alt="${cake.name}">`
                     : `<div style="height:180px; display:flex; align-items:center; justify-content:center; font-size:60px;">🍰</div>`
                 }
 
