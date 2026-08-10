@@ -4,6 +4,7 @@ import com.cakedelight.rating.entity.Rating;
 import com.cakedelight.rating.repository.RatingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public class RatingService {
 
     private final RatingRepository ratingRepository;
     private final RestClient restClient;
+    @Value("${catalog.service.url}")
+    private String catalogServiceUrl;
 
     public RatingService(RatingRepository ratingRepository,
                          RestClient restClient) {
@@ -89,7 +92,7 @@ public class RatingService {
 
         try {
             restClient.get()
-                    .uri("http://localhost:8080/cakes/{id}", cakeId)
+                    .uri(catalogServiceUrl + "/cakes/{id}", cakeId)
                     .retrieve()
                     .toBodilessEntity();
 

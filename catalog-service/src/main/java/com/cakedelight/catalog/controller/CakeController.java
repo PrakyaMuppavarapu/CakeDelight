@@ -3,6 +3,7 @@ package com.cakedelight.catalog.controller;
 import com.cakedelight.catalog.entity.Cake;
 import com.cakedelight.catalog.service.CakeService;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -19,6 +20,21 @@ public class CakeController {
     @GetMapping
     public List<Cake> getAllCakes() {
         return cakeService.getAllCakes();
+    }
+
+    @GetMapping("/filter")
+    public List<Cake> filterCakes(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
+
+        return cakeService.filterCakes(
+                name,
+                category,
+                minPrice,
+                maxPrice
+        );
     }
 
     @GetMapping("/{id}")

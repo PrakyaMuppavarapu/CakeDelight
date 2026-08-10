@@ -92,11 +92,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://rating-postgres:5432/rating_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      CATALOG_SERVICE_URL: http://catalog-service:8080
     ports:
       - "8082:8082"
     networks:
       - cakedelight-network
 
+    
   notification-service:
     build: ./notification-service
     container_name: notification-service

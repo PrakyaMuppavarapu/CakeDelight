@@ -48,60 +48,7 @@ async function loadCakes() {
 
         const cakes = await response.json();
 
-        cakeList.innerHTML = "";
-
-        if (cakes.length === 0) {
-            cakeList.innerHTML = "<p>No cakes available.</p>";
-            return;
-        }
-
-        cakes.forEach(cake => {
-
-            const card = document.createElement("div");
-            card.className = "cake-card";
-
-            card.innerHTML = `
-                ${cake.imageUrl
-                ? `<img src="images/${cake.imageUrl}" alt="${cake.name}">`
-                    : `<div style="height:180px; display:flex; align-items:center; justify-content:center; font-size:60px;">🍰</div>`
-                }
-
-                <div class="cake-card-content">
-
-                    <h3>${cake.name}</h3>
-
-                    <p>${cake.description || ""}</p>
-
-                    <p>Category: ${cake.category || "Cake"}</p>
-
-                    <p class="price">
-                        ₹${Number(cake.price).toFixed(2)}
-                    </p>
-
-                    <p>
-                        ${cake.available ? "✅ Available" : "❌ Unavailable"}
-                    </p>
-
-                    <button
-                        class="add-button"
-                        onclick="addToBasket(${cake.id})"
-                        ${!cake.available ? "disabled" : ""}
-                    >
-                        Add to Basket
-                    </button>
-
-                    <button
-                        class="add-button"
-                        onclick="viewRatings(${cake.id})"
-                    >
-                        ⭐ View Ratings
-                    </button>
-
-                </div>
-            `;
-
-            cakeList.appendChild(card);
-        });
+        displayCakes(cakes);
 
     } catch (error) {
 
@@ -112,6 +59,124 @@ async function loadCakes() {
     }
 }
 
+
+function displayCakes(cakes) {
+
+    const cakeList = document.getElementById("cake-list");
+
+    cakeList.innerHTML = "";
+
+    if (cakes.length === 0) {
+        cakeList.innerHTML = "<p>No cakes found.</p>";
+        return;
+    }
+
+    cakes.forEach(cake => {
+
+        const card = document.createElement("div");
+        card.className = "cake-card";
+
+        card.innerHTML = `
+            ${cake.imageUrl
+            ? `<img src="images/${cake.imageUrl}" alt="${cake.name}">`
+            : `<div style="height:180px; display:flex; align-items:center; justify-content:center; font-size:60px;">🍰</div>`
+        }
+
+            <div class="cake-card-content">
+
+                <h3>${cake.name}</h3>
+
+                <p>${cake.description || ""}</p>
+
+                <p>Category: ${cake.category || "Cake"}</p>
+
+                <p class="price">
+                    ₹${Number(cake.price).toFixed(2)}
+                </p>
+
+                <p>
+                    ${cake.available ? "Available" : "Unavailable"}
+                </p>
+
+                <button
+                    class="add-button"
+                    onclick="addToBasket(${cake.id})"
+                    ${!cake.available ? "disabled" : ""}
+                >
+                    Add to Basket
+                </button>
+
+                <button
+                    class="add-button"
+                    onclick="viewRatings(${cake.id})"
+                >
+                    ⭐ View Ratings
+                </button>
+
+            </div>
+        `;
+
+        cakeList.appendChild(card);
+    });
+}
+
+async function filterCakes() {
+
+    const name = document.getElementById("filter-name").value.trim();
+    const category = document.getElementById("filter-category").value;
+    const minPrice = document.getElementById("filter-min-price").value;
+    const maxPrice = document.getElementById("filter-max-price").value;
+
+    const params = new URLSearchParams();
+
+    if (name) {
+        params.append("name", name);
+    }
+
+    if (category) {
+        params.append("category", category);
+    }
+
+    if (minPrice) {
+        params.append("minPrice", minPrice);
+    }
+
+    if (maxPrice) {
+        params.append("maxPrice", maxPrice);
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE}/cakes/filter?${params.toString()}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Could not filter cakes");
+        }
+
+        const cakes = await response.json();
+
+        displayCakes(cakes);
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("cake-list").innerHTML =
+            "<p>Could not filter cakes.</p>";
+    }
+}
+
+function clearFilters() {
+
+    document.getElementById("filter-name").value = "";
+    document.getElementById("filter-category").value = "";
+    document.getElementById("filter-min-price").value = "";
+    document.getElementById("filter-max-price").value = "";
+
+    loadCakes();
+}
 
 // ==============================
 // Basket
@@ -423,7 +488,21 @@ async function loadOrders() {
 // Ratings
 // ==============================
 
+let currentRatingCakeId = null;
+
 async function viewRatings(cakeId) {
+
+    currentRatingCakeId = cakeId;
+
+    const modal = document.getElementById("rating-modal");
+    const ratingList = document.getElementById("rating-list");
+    const ratingMessage = document.getElementById("rating-message");
+
+    ratingMessage.textContent = "";
+
+    modal.classList.remove("hidden");
+
+    ratingList.innerHTML = "<p>Loading ratings...</p>";
 
     try {
 
@@ -442,7 +521,8 @@ async function viewRatings(cakeId) {
 
         if (cakeRatings.length === 0) {
 
-            alert("No ratings yet for this cake.");
+            ratingList.innerHTML =
+                "<p>No ratings yet for this cake. Be the first to review it!</p>";
 
             return;
         }
@@ -453,23 +533,122 @@ async function viewRatings(cakeId) {
                 0
             ) / cakeRatings.length;
 
-        let message =
-            `⭐ Average Rating: ${average.toFixed(1)}\n\n`;
+        let html = `
+            <p>
+                <strong>Average Rating:</strong>
+                ${average.toFixed(1)} ⭐
+            </p>
+        `;
 
         cakeRatings.forEach(rating => {
 
-            message +=
-                `${rating.customerName}: ${"⭐".repeat(rating.rating)}\n` +
-                `${rating.review}\n\n`;
+            html += `
+                <div class="rating-item">
+
+                    <strong>
+                        ${rating.customerName}
+                    </strong>
+
+                    <p>
+                        ${"⭐".repeat(rating.rating)}
+                    </p>
+
+                    <p>
+                        ${rating.review || ""}
+                    </p>
+
+                </div>
+            `;
         });
 
-        alert(message);
+        ratingList.innerHTML = html;
 
     } catch (error) {
 
         console.error(error);
 
-        alert("Could not load ratings.");
+        ratingList.innerHTML =
+            "<p>Could not load ratings.</p>";
+    }
+}
+
+function closeRatingModal() {
+
+    document
+        .getElementById("rating-modal")
+        .classList.add("hidden");
+
+    currentRatingCakeId = null;
+}
+
+async function submitRating() {
+
+    const customerName =
+        document.getElementById("rating-customer-name").value.trim();
+
+    const rating =
+        Number(document.getElementById("rating-value").value);
+
+    const review =
+        document.getElementById("rating-review").value.trim();
+
+    const message =
+        document.getElementById("rating-message");
+
+    if (!customerName) {
+        message.textContent = "Please enter your name.";
+        return;
+    }
+
+    if (!review) {
+        message.textContent = "Please write a review.";
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE}/ratings`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    cakeId: currentRatingCakeId,
+                    customerName: customerName,
+                    rating: rating,
+                    review: review
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Could not submit rating");
+        }
+
+        message.textContent =
+            "Rating submitted successfully! ⭐";
+
+        document.getElementById(
+            "rating-customer-name"
+        ).value = "";
+
+        document.getElementById(
+            "rating-review"
+        ).value = "";
+
+        // Reload the ratings
+        await viewRatings(currentRatingCakeId);
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Could not submit rating. Please try again.";
     }
 }
 

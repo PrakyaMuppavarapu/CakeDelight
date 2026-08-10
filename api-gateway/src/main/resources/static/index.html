@@ -23,8 +23,47 @@
 <main>
 
     <!-- Cakes -->
+    <!-- Cakes -->
     <section id="cakes" class="section">
         <h2>Our Cakes</h2>
+
+        <!-- Cake Filters -->
+        <div class="cake-filters">
+
+            <input
+                    type="text"
+                    id="filter-name"
+                    placeholder="Search by cake name"
+            >
+
+            <select id="filter-category">
+                <option value="">All Categories</option>
+                <option value="Chocolate">Chocolate</option>
+                <option value="Vanilla">Vanilla</option>
+                <option value="Red Velvet">Red Velvet</option>
+                <option value="Fruit">Fruit</option>
+            </select>
+
+            <input
+                    type="number"
+                    id="filter-min-price"
+                    placeholder="Min price"
+                    min="0"
+            >
+
+            <input
+                    type="number"
+                    id="filter-max-price"
+                    placeholder="Max price"
+                    min="0"
+            >
+
+            <button onclick="filterCakes()">Filter</button>
+
+            <button onclick="clearFilters()">Clear</button>
+
+        </div>
+
         <div id="cake-list" class="cake-grid">
             <p>Loading cakes...</p>
         </div>
@@ -55,6 +94,58 @@
             <p>No orders loaded.</p>
         </div>
     </section>
+
+    <!-- Rating Modal -->
+    <div id="rating-modal" class="rating-modal hidden">
+
+        <div class="rating-modal-content">
+
+            <button class="close-button" onclick="closeRatingModal()">
+                ×
+            </button>
+
+            <h2 id="rating-cake-name">Cake Ratings</h2>
+
+            <div id="rating-list">
+                <p>Loading ratings...</p>
+            </div>
+
+            <hr>
+
+            <h3>Leave a Rating</h3>
+
+            <input
+                    type="text"
+                    id="rating-customer-name"
+                    placeholder="Your name"
+            >
+
+            <select id="rating-value">
+                <option value="5">⭐⭐⭐⭐⭐ - Excellent</option>
+                <option value="4">⭐⭐⭐⭐ - Very Good</option>
+                <option value="3">⭐⭐⭐ - Good</option>
+                <option value="2">⭐⭐ - Fair</option>
+                <option value="1">⭐ - Poor</option>
+            </select>
+
+            <textarea
+                    id="rating-review"
+                    placeholder="Write your review"
+                    rows="4"
+            ></textarea>
+
+            <button
+                    class="add-button"
+                    onclick="submitRating()"
+            >
+                Submit Rating
+            </button>
+
+            <p id="rating-message"></p>
+
+        </div>
+
+    </div>
 
 </main>
 
