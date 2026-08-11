@@ -6,6 +6,14 @@ The application is implemented using a microservices architecture and can be run
 
 ---
 
+## Documentation
+
+- [API Documentation](docs/API-DOCUMENTATION.md)
+- [Database Schema](docs/DATABASE-SCHEMA.md)
+- [Event Contract](docs/EVENT-CONTRACT.md)
+
+---
+
 ## Application Preview
 
 ![CakeDelight Home Page](docs/screenshots/home.png)
@@ -182,6 +190,7 @@ GET    http://localhost:8084/cakes/{id}
 POST   http://localhost:8084/cakes
 PUT    http://localhost:8084/cakes/{id}
 DELETE http://localhost:8084/cakes/{id}
+GET    http://localhost:8084/cakes/filter
 ```
 
 ### Orders
@@ -222,6 +231,8 @@ GET    http://localhost:8084/ratings/{id}
 POST   http://localhost:8084/ratings
 PUT    http://localhost:8084/ratings/{id}
 DELETE http://localhost:8084/ratings/{id}
+GET    http://localhost:8084/ratings/cake/{cakeId}
+GET    http://localhost:8084/ratings/cake/{cakeId}/average
 ```
 
 The exact request bodies can be found in the respective controller/entity implementations.
@@ -446,7 +457,21 @@ Order checkout generates an event that is sent through RabbitMQ and processed by
 
 ---
 
-# 12. Project Structure
+# 12. End-to-End Flow
+
+1. Browse cakes through the web UI.
+2. Filter cakes by name, category, or price.
+3. Add cakes to the shopping basket.
+4. Update or remove basket items.
+5. Checkout the basket.
+6. Order Service creates the order.
+7. Order Service publishes an `OrderPlacedEvent` through RabbitMQ.
+8. Notification Service consumes the event and processes the notification.
+9. Customers can submit and view cake ratings and reviews.
+
+---
+
+# 13. Project Structure
 
 ```text
 CakeDelight/
@@ -498,7 +523,7 @@ CakeDelight/
 
 ---
 
-# 13. Stopping the Application
+# 14. Stopping the Application
 
 ## Docker Compose
 
@@ -524,7 +549,7 @@ kubectl delete -f k8s/
 
 ---
 
-# 14. Troubleshooting
+# 15. Troubleshooting
 
 ## Check Docker Compose containers
 
@@ -572,7 +597,7 @@ kubectl rollout restart deployment catalog-service
 
 ---
 
-# 15. Quick Start
+# 16. Quick Start
 
 For the easiest demonstration:
 
@@ -603,7 +628,7 @@ http://localhost:30084
 
 ---
 
-# 16. Repository
+# 17. Repository
 
 Source code:
 
