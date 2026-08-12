@@ -249,6 +249,8 @@ The Order Service publishes an order event after checkout.
 
 The Notification Service consumes the event and processes the notification.
 
+![Notifications](docs/screenshots/notification.png)
+
 RabbitMQ management is available at:
 
 ```text
@@ -347,6 +349,8 @@ kubectl get services
 ```
 
 The API Gateway is exposed through a NodePort.
+
+![Kubernetes Services](docs/screenshots/kubernetes-services.png)
 
 ## Step 6: Open the Kubernetes application
 
