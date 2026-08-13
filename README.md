@@ -266,7 +266,7 @@ Password: guest
 
 ---
 
-# 8. Run with Kubernetes
+# 8A. Run with Kubernetes
 
 Docker Compose and Kubernetes are separate deployment options.
 
@@ -361,6 +361,81 @@ http://localhost:30084
 ```
 
 The CakeDelight UI should load.
+
+---
+
+# 8B. Run with Minikube
+
+Minikube is an alternative way to run a local Kubernetes cluster instead of using Docker Desktop's built-in Kubernetes.
+
+## Step 1: Install Minikube and kubectl
+
+Install:
+
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+- kubectl
+
+## Step 2: Start Minikube
+
+```powershell
+minikube start
+```
+
+Verify the cluster is running:
+
+```powershell
+kubectl get nodes
+```
+
+The node should show:
+
+```text
+STATUS   Ready
+```
+
+## Step 3: Point Docker to Minikube's internal Docker daemon
+
+Minikube runs its own Docker engine inside the cluster. To make the images you build available to Minikube, point your terminal at it:
+
+```powershell
+minikube docker-env | Invoke-Expression
+```
+
+Run this every time you open a new terminal window before building images.
+
+## Step 4: Build the application images
+
+From the project root:
+
+```powershell
+docker compose build
+```
+
+## Step 5: Deploy the Kubernetes resources
+
+```powershell
+kubectl apply -f k8s/
+```
+
+## Step 6: Check the pods
+
+```powershell
+kubectl get pods
+```
+
+All application pods should eventually show:
+
+```text
+1/1   Running
+```
+
+## Step 7: Open the application
+
+```powershell
+minikube service api-gateway
+```
+
+This automatically opens the CakeDelight web UI in your browser.
 
 ---
 
